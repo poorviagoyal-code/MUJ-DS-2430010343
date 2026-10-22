@@ -8,11 +8,6 @@
 **GitHub:** [poorviagoyal-code](https://github.com/poorviagoyal-code)  
 **Project:** Forecasting Access to Safely Managed Drinking Water
 
-## Team
-
-- Poorvi Goyal — 2430010343
-- Bhoomi Kothari — 2430010325
-
 ## Project overview
 
 This project compares Linear Regression, Random Forest, and a Transformer model for one-year-ahead country-level water-access prediction using five-year windows of water access, urban population, and unemployment indicators. The intended evaluation split is chronological: training through 2018, validation during 2019–2020, and test during 2021–2024.
