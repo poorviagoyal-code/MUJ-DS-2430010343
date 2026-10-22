@@ -3,7 +3,7 @@
 **Student:** Poorvi Goyal  
 **Registration Number:** 2430010343  
 **Branch:** B.Tech Computer Science Engineering (Data Science)  
-**Batch:** F (as required by the repository naming convention; confirm with course records)  
+**Batch:** D  
 **Institution:** Manipal University Jaipur  
 **GitHub:** [poorviagoyal-code](https://github.com/poorviagoyal-code)  
 **Project:** Forecasting Access to Safely Managed Drinking Water
@@ -71,4 +71,4 @@ By default, the script reads the three source CSV files from `capstone/data/`. T
 
 The course guidelines call for a public personal repository named `MUJ-DS-RegNo`, a separate team capstone repository, instructor collaboration on both, source code, documentation, screenshots, results, an installation guide, a presentation, and the URLs submitted for both repositories. A ZIP alone is not the final submission.
 
-See `docs/installation.md`, `docs/issues.md`, `docs/pr-workflow.md`, and `resources/Batch_F_NLP_Capstone_Project_Guidelines_v1_0.pdf`.
+See `docs/installation.md`, `docs/issues.md`, `docs/pr-workflow.md`, and `capstone/docs/VALIDATION_CHECKLIST.md`. Add the course-guidelines PDF under `resources/` before final submission.
