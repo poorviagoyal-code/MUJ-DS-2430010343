@@ -1,53 +1,84 @@
-# Capstone: Forecasting Access to Safely Managed Drinking Water
+# Forecasting Access to Safely Managed Drinking Water
 
-**T**Members:** [Poorvi Goyal(poorviagoyal-code)], [Bhoomi Kothari(Bhoomii2910)]
+**Deep Learning Capstone | Research manuscript in progress**
 
-## Problem
-Given a country's last 5 years of data, predict next year's % of population using safely managed drinking-water services (WHO/UNICEF JMP indicator `WSH_WATER_SAFELY_MANAGED`).
+This project studies one-year-ahead forecasts of safely managed drinking-water access using a five-year history of water access, urban population, and unemployment. It compares Linear Regression, Random Forest, a Transformer encoder, and a persistence baseline.
+
+## Research question
+
+Does a Transformer encoder improve one-year-ahead country-level forecasts over simpler regression methods and repeating the most recent observed water-access value?
 
 ## Data
-| File | Source | Used for |
-|---|---|---|
-| `data/water.csv` | WHO Global Health Observatory | Target and lag feature (country-level, "Total" residence type) |
-| `data/urban_population.csv` | World Bank | Urban population (%) feature |
-| `data/unemployment.csv` | World Bank | Unemployment (%) feature |
 
-After cleaning and merging: 3,873 country-year rows, 158 countries, 2000-2024. Missing values: urban population 5.99%, unemployment 15.00%; incomplete windows are dropped. Correlation with water access: urban population 0.671, unemployment 0.167.
+The current raw input files are in the repository root:
+
+| File | Source / purpose |
+|---|---|
+| `water.csv` | WHO/UNICEF JMP-related water-access indicator data; target and lag feature |
+| `urban_population.csv` | World Bank urban population indicator |
+| `unemployment.csv` | World Bank unemployment indicator |
+
+The current pipeline filters water-access records to country-level observations with the “Total” residence category, merges by country code and year, and creates windows requiring consecutive annual observations. Check the source metadata and target units before interpreting the metrics.
 
 ## Method
-1. **Preprocess:** keep country-level totals, reshape World Bank wide tables, merge on country and year, drop aggregates.
-2. **Windows:** 5 consecutive years of [water, urban, unemployment] -> next-year water access.
-3. **Time-based split (no shuffling):** train <= 2018 (1,839), validation 2019-2020 (266), test 2021-2024 (522). Scalers fit on training data only.
-4. **Models:** Linear Regression, Random Forest (100 trees, depth 12), Transformer encoder (2 layers, 4 heads, d_model 32, AdamW, early stopping on validation loss).
 
-## Results (test set, 2021-2024)
-| Model | MAE | RMSE | R2 |
-|---|---|---|---|
-| **Linear Regression** | **0.087** | **0.245** | 0.9999 |
-| *Naive baseline (repeat last year)* | 0.322 | 0.578 | 0.9996 |
-| Random Forest | 0.401 | 0.637 | 0.9995 |
-| Transformer | 0.434 | 0.617 | 0.9996 |
+- Input: five consecutive years of water access, urban population, and unemployment.
+- Target: water-access value in the following year.
+- Chronological split by target year: training through 2018, validation 2019–2020, test 2021–2024.
+- Standardization parameters are fitted on training data only.
+- Models: Linear Regression, Random Forest, Transformer encoder, and persistence (repeat last observed value).
 
-Results come from `code/water_forecast.py` (seed 42, test set 2021-2024, 522 predictions). Transformer training is not bit-for-bit reproducible across hardware, so re-running can shift its numbers slightly. The exploratory notebook's printed outputs are from an earlier run; the table above is final.
+## Preliminary saved results
 
-Screenshots: [`screenshots/`](screenshots/). Predictions: [`results/water_predictions.csv`](results/water_predictions.csv).
+These are the values currently recorded in `model_comparison.csv`. They must be regenerated and checked from a clean run before being used as final research results.
 
-## Findings and limitations
-- **Linear Regression is the best model** by a wide margin (MAE 0.087 vs 0.322 for the naive baseline).
-- **Neither Random Forest nor the Transformer beats the naive "repeat last year" baseline.** The Transformer (MAE 0.434) is no better than the Random Forest (0.401), and both are worse than simply carrying last year's value forward.
-- The very high R2 (> 0.999) mostly reflects that water access changes slowly: last year's value already explains almost everything. R2 alone is not a good measure here; compare against the naive baseline.
-- The transformer's value is limited on ~1,800 training rows; more data or features would be needed to justify it.
-- Only 3 features; no health, income or rainfall data. Missing unemployment data removes about 15% of rows.
+| Model | MAE | RMSE | R² |
+|---|---:|---:|---:|
+| Linear Regression | 0.0867 | 0.2446 | 0.99993 |
+| Random Forest | 0.4012 | 0.6368 | 0.99953 |
+| Transformer | 0.4341 | 0.6169 | 0.99956 |
+| Persistence (repeat last year) | 0.3220 | 0.5778 | 0.99961 |
 
-## Run it
-See [`docs/installation.md`](docs/installation.md).
+**Interpretation:** Linear Regression has the lowest saved MAE and RMSE. The persistence baseline outperforms both Random Forest and Transformer on MAE and RMSE. The current results therefore do not support a claim that the Transformer is the best model. The very high R² values should not be interpreted in isolation.
 
-## Structure
+**Important validation task:** verify whether the target is stored as a fraction or a percentage and investigate the unusually low Linear Regression error relative to persistence. Do not silently alter or clip target values to improve metrics.
+
+## Run the pipeline
+
+Install dependencies and run from the repository root:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python water_forecast.py --data-dir . --out-dir results --model-dir models --fig-dir figures
 ```
-capstone/
-  data/         raw input CSVs
-  results/      model_comparison.csv, water_predictions.csv
-  models/       water_transformer.pt (weights + scaler params)
-  screenshots/  plots
-  docs/         installation.md, issues.md, pr-workflow.md
-```
+
+See [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md) for validation steps.
+
+## Research manuscript
+
+- [Research paper draft](research_paper_draft.md) — includes abstract, methods, preliminary results, limitations, references, and a reproducibility statement. It is a draft, not a submission-ready or peer-reviewed paper.
+- Existing notebook: [deep_learning.ipynb](deep_learning.ipynb)
+- Existing presentation: [water_access_forecasting.pptx](water_access_forecasting.pptx)
+
+## Existing artifacts
+
+The repository already contains raw CSVs, `water_forecast.py`, `deep_learning.ipynb`, `model_comparison.csv`, `water_predictions.csv`, `water_transformer.pt`, and plots. These have been retained. The script writes fresh results to the output directories passed as arguments.
+
+## Limitations and next steps
+
+- Confirm target units, indicator metadata, missingness, sample counts, and the exact dataset source/retrieval date.
+- Regenerate all metrics and predictions from the same run.
+- Investigate the unusually low Linear Regression error.
+- Repeat Transformer training across multiple random seeds.
+- Add rolling-origin evaluation and error breakdowns by year/country where appropriate.
+- Consider additional predictors only when their sources, temporal coverage, and missingness are documented.
+
+## References / data portals
+
+- WHO/UNICEF Joint Monitoring Programme: https://washdata.org/
+- World Bank World Development Indicators: https://databank.worldbank.org/source/world-development-indicators
+- Vaswani et al., “Attention Is All You Need” (2017): https://arxiv.org/abs/1706.03762
+- Hyndman and Athanasopoulos, *Forecasting: Principles and Practice*: https://otexts.com/fpp3/
