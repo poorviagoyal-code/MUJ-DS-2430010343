@@ -5,8 +5,8 @@ unemployment indicators, then compares Linear Regression, Random Forest and a
 small Transformer on a time-based train/validation/test split.
 
 Usage (from the repository root):
-    python code/water_forecast.py
-    python code/water_forecast.py --data-dir capstone/data --out-dir capstone/results
+    python water_forecast.py
+    python water_forecast.py --data-dir . --out-dir results --model-dir models --fig-dir figures
 """
 import argparse
 import os
@@ -165,13 +165,13 @@ def train_transformer(X_scaled, y_scaled, train, valid, device):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data-dir", default="capstone/data")
-    parser.add_argument("--out-dir", default="capstone/results")
-    parser.add_argument("--model-dir", default="capstone/models")
-    parser.add_argument("--fig-dir", default="capstone/screenshots")
+    parser.add_argument("--data-dir", default=".")
+    parser.add_argument("--out-dir", default="results")
+    parser.add_argument("--model-dir", default="models")
+    parser.add_argument("--fig-dir", default="figures")
     # parse_known_args ignores extra flags that Jupyter/Colab inject (e.g. -f kernel.json)
     args, _ = parser.parse_known_args()
-    # Colab fallback: files uploaded to /content instead of capstone/data
+    # Colab fallback: files uploaded to /content instead of the selected data directory
     if (not os.path.exists(os.path.join(args.data_dir, "water.csv"))
             and os.path.exists("/content/water.csv")):
         args.data_dir = "/content"
